@@ -1,0 +1,34 @@
+{
+  "name": "jornada-leve",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint -- --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean",
+    "db:generate": "cd packages/db && drizzle-kit generate",
+    "db:migrate": "cd packages/db && drizzle-kit migrate",
+    "db:push": "cd packages/db && drizzle-kit push",
+    "db:studio": "cd packages/db && drizzle-kit studio",
+    "ci": "turbo lint typecheck build"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.5.0",
+    "prettier": "^3.5.0",
+    "prettier-plugin-tailwindcss": "^0.6.0",
+    "turbo": "^2.5.0",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "npm@11.0.0"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@jornada-leve/email",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "resend": "^4.2.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}
