@@ -408,7 +408,16 @@ export default function LandingPage() {
             <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {/* Card 1 */}
               <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🥗</div>
+                <div className="relative aspect-square size-12 overflow-hidden rounded-full bg-green-100">
+                  <Image
+                    src="/landing/food-cafe-manha.jpg"
+                    alt="Café da manhã com frutas, aveia e tapioca"
+                    fill
+                    loading="lazy"
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
                 <h3 className="mt-4 font-semibold text-lg">Café da manhã leve</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                   Fruta picada (mamão, banana, maçã) com aveia e um fio de mel. Ou tapioca recheada com
@@ -418,7 +427,16 @@ export default function LandingPage() {
 
               {/* Card 2 */}
               <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🍛</div>
+                <div className="relative aspect-square size-12 overflow-hidden rounded-full bg-green-100">
+                  <Image
+                    src="/landing/food-almoco.jpg"
+                    alt="Almoço com arroz, feijão e frango"
+                    fill
+                    loading="lazy"
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
                 <h3 className="mt-4 font-semibold text-lg">Almoço equilibrado</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                   Arroz, feijão, salada verde e uma proteína magra (frango grelhado, peixe, ovo). 
@@ -428,7 +446,16 @@ export default function LandingPage() {
 
               {/* Card 3 */}
               <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🥤</div>
+                <div className="relative aspect-square size-12 overflow-hidden rounded-full bg-green-100">
+                  <Image
+                    src="/landing/food-hidratacao.jpg"
+                    alt="Água de coco e suco natural para hidratação"
+                    fill
+                    loading="lazy"
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
                 <h3 className="mt-4 font-semibold text-lg">Hidratação é chave</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                   Água de coco, suco natural (limão, maracujá, acerola) e muita água. Evite refrigerante
@@ -438,7 +465,16 @@ export default function LandingPage() {
 
               {/* Card 4 */}
               <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🥜</div>
+                <div className="relative aspect-square size-12 overflow-hidden rounded-full bg-green-100">
+                  <Image
+                    src="/landing/food-lanches.jpg"
+                    alt="Lanche com castanhas e iogurte"
+                    fill
+                    loading="lazy"
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
                 <h3 className="mt-4 font-semibold text-lg">Lanches inteligentes</h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                   Castanhas, amendoim torrado sem sal, iogurte natural com granola, ou uma banana com
