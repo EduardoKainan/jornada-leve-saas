@@ -504,7 +504,7 @@ export default function LandingPage() {
                 <ul className="mt-7 flex-1 space-y-4 text-sm text-slate-700">
                   {['Sem cartão de crédito', 'Acesso completo por 7 dias', 'Cancele quando quiser'].map((item) => <li key={item} className="flex gap-2"><Check className="size-5 shrink-0 text-emerald-600" aria-hidden="true" />{item}</li>)}
                 </ul>
-                <Link href="/cadastro" className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full border border-emerald-700 px-5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50">Testar grátis</Link>
+                <Link href="/cadastro" className="inline-flex min-h-12 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-bold text-white shadow-[0_6px_20px_-8px_rgba(5,150,105,.6)] transition hover:bg-emerald-700">Testar grátis</Link>
               </article>
               <article className="flex flex-col rounded-[2rem] border border-slate-200 bg-white p-7 sm:p-8">
                 <h3 className="text-xl font-bold">Mensal</h3>
@@ -513,7 +513,7 @@ export default function LandingPage() {
                 <ul className="mt-7 flex-1 space-y-4 text-sm text-slate-700">
                   {['Check-ins e registros ilimitados', 'Gráficos e calendário', 'Relatórios em PDF'].map((item) => <li key={item} className="flex gap-2"><Check className="size-5 shrink-0 text-emerald-600" aria-hidden="true" />{item}</li>)}
                 </ul>
-                <Link href="/cadastro?plano=mensal" className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full border border-emerald-700 px-5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50">Escolher mensal</Link>
+                <Link href="/cadastro?plano=mensal" className="inline-flex min-h-12 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-bold text-white shadow-[0_6px_20px_-8px_rgba(5,150,105,.6)] transition hover:bg-emerald-700">Escolher mensal</Link>
               </article>
               <article className="relative flex flex-col rounded-[2rem] border-2 border-emerald-500 bg-[#073f34] p-7 text-white shadow-[0_28px_70px_-35px_rgba(6,78,59,.7)] sm:p-8 lg:-translate-y-3">
                 <span className="absolute right-6 top-0 -translate-y-1/2 rounded-full bg-amber-300 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wide text-amber-950">Economize 2 meses</span>
