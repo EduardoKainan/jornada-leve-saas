@@ -199,12 +199,12 @@ export default function LandingPage() {
             </a>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/entrar" className="hidden text-sm font-semibold text-white transition hover:text-emerald-100 sm:block">
+            <Link href="/entrar" className="hidden min-h-10 items-center rounded-full border border-white/50 px-4 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10 sm:inline-flex">
               Entrar
             </Link>
             <Link
               href="/cadastro"
-              className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex min-h-10 items-center rounded-full bg-emerald-600 px-4 text-sm font-bold text-white shadow-[0_8px_24px_-10px_rgba(5,150,105,.8)] transition hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#063d32]"
             >
               Testar grátis
             </Link>
@@ -237,7 +237,7 @@ export default function LandingPage() {
                 Registre peso, medidas e sintomas em segundos. Chegue na consulta com dados reais — não com achismo.
               </p>
               <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <Link href="/cadastro" className={`${primaryButton} bg-white text-emerald-800 hover:bg-emerald-50`}>
+                <Link href="/cadastro" className={primaryButton}>
                   Começar grátis por 7 dias
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                 </Link>
@@ -278,7 +278,7 @@ export default function LandingPage() {
         </section>
 
         <section className="bg-[#f3f8f5] py-20 sm:py-28" aria-labelledby="problema-title">
-          <div className="mx-auto grid max-w-6xl gap-12 px-5 sm:px-8 lg:grid-cols-[.85fr_1.15fr] lg:items-center lg:px-10">
+          <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-[.75fr_.65fr_1.1fr] lg:items-center lg:px-10">
             <div>
               <span className="text-sm font-bold uppercase tracking-[.16em] text-emerald-700">A rotina real</span>
               <h2 id="problema-title" className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -292,7 +292,20 @@ export default function LandingPage() {
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <figure className="relative min-h-[360px] overflow-hidden rounded-[2rem] shadow-[0_24px_70px_-35px_rgba(15,23,42,.45)] sm:min-h-[440px] lg:min-h-[520px]">
+              <Image
+                src="/landing/foto-mulher-pensativa.jpg"
+                alt="Mulher brasileira refletindo enquanto organiza anotações sobre seu tratamento"
+                fill
+                loading="lazy"
+                sizes="(max-width: 1024px) 92vw, 28vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/75 to-transparent p-6 pt-20 text-white">
+                <figcaption className="text-sm font-semibold leading-6">Quando tudo fica na memória, detalhes importantes se perdem.</figcaption>
+              </div>
+            </figure>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               {[
                 'Será que o medicamento tá fazendo efeito mesmo?',
                 'Esqueceu quanto pesava mês passado?',
@@ -317,7 +330,21 @@ export default function LandingPage() {
               </h2>
               <p className="mt-5 text-lg text-slate-600">Em menos de 1 minuto por dia, você registra, acompanha e compartilha o que importa.</p>
             </div>
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <figure className="relative mt-12 min-h-[320px] overflow-hidden rounded-[2rem] bg-emerald-950 shadow-[0_24px_70px_-35px_rgba(6,78,59,.5)] sm:min-h-[420px]">
+              <Image
+                src="/landing/foto-mulher-satisfeita.jpg"
+                alt="Mulher brasileira feliz usando o celular para acompanhar seu tratamento"
+                fill
+                loading="lazy"
+                sizes="(max-width: 1280px) 92vw, 1200px"
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#063d32]/90 via-[#063d32]/35 to-transparent" />
+              <figcaption className="absolute inset-y-0 left-0 flex max-w-lg items-center p-7 text-white sm:p-12">
+                <span className="text-balance text-2xl font-bold leading-tight sm:text-4xl">Seu acompanhamento cabe na rotina — e na palma da mão.</span>
+              </figcaption>
+            </figure>
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
               {[
                 { image: '/landing/ilustracao-registre.jpg', alt: 'Mão segurando celular com check-in', step: '01', title: 'Registre', text: 'Peso, medidas e sintomas. Rápido, simples e direto do celular.' },
                 { image: '/landing/ilustracao-acompanhe.jpg', alt: 'Gráfico de linha com pontos de evolução', step: '02', title: 'Acompanhe', text: 'Gráficos automáticos ajudam a visualizar sua evolução real ao longo do tempo.' },
@@ -454,7 +481,21 @@ export default function LandingPage() {
                 Milhares de pacientes já usam o Jornada Leve pra acompanhar seu tratamento.
               </h2>
             </div>
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <figure className="relative min-h-[360px] overflow-hidden rounded-[2rem] bg-emerald-950 shadow-[0_18px_60px_-35px_rgba(6,78,59,.45)] sm:min-h-0">
+                <Image
+                  src="/landing/foto-mulher-satisfeita.jpg"
+                  alt="Mulher brasileira satisfeita consultando seus registros no celular"
+                  fill
+                  loading="lazy"
+                  sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 25vw"
+                  className="object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#063d32]/90 via-transparent to-transparent" />
+                <figcaption className="absolute inset-x-0 bottom-0 p-7 text-sm font-semibold leading-6 text-white">
+                  Mais clareza para acompanhar cada etapa da sua jornada.
+                </figcaption>
+              </figure>
               {testimonials.map((item) => (
                 <figure key={item.name} className="relative rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_18px_60px_-40px_rgba(15,23,42,.35)]">
                   <Quote className="size-9 text-emerald-200" aria-hidden="true" />
@@ -562,7 +603,7 @@ export default function LandingPage() {
               <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-white/10 text-emerald-200 backdrop-blur-sm"><LineChart className="size-7" aria-hidden="true" /></span>
               <h2 id="cta-final-title" className="mt-6 text-balance text-3xl font-bold tracking-tight sm:text-5xl">Sua evolução merece ser registrada. Não confie na memória.</h2>
               <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-emerald-50/75">Comece hoje e chegue à próxima consulta com uma visão mais clara do seu tratamento.</p>
-              <Link href="/cadastro" className={`${primaryButton} mt-8 bg-white text-emerald-800 hover:bg-emerald-50`}>
+              <Link href="/cadastro" className={`${primaryButton} mt-8`}>
                 Começar grátis agora <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
               </Link>
               <p className="mt-4 text-xs text-emerald-50/60">7 dias grátis · Sem cartão · Cancele quando quiser</p>
