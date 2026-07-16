@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { CalendarClock, ChevronRight, ClipboardCheck, ClipboardPlus, Ruler, Scale, Sparkles, TrendingDown, TrendingUp } from 'lucide-react';
+import { ShareEvolutionActions } from '@/components/share/share-evolution-actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardCharts } from '@/components/health/dashboard-charts';
 import { createClient } from '@/lib/supabase/server';
@@ -27,7 +28,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const firstName = profile?.display_name.split(' ')[0] ?? 'você';
 
   return <div className="space-y-6">
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm text-muted-foreground">Seu espaço de acompanhamento</p><h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Olá, {firstName}!</h1></div><Link href="/app/registrar" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-medium text-primary-foreground hover:bg-primary/90"><ClipboardPlus className="size-5" /> Registrar agora</Link></header>
+    <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm text-muted-foreground">Seu espaço de acompanhamento</p><h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Olá, {firstName}!</h1></div><div className="flex flex-col gap-2 sm:flex-row"><ShareEvolutionActions compact /><Link href="/app/registrar" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 font-medium text-primary-foreground hover:bg-primary/90"><ClipboardPlus className="size-5" /> Registrar agora</Link></div></header>
     {params['boas-vindas'] === '1' && <div className="flex gap-3 rounded-2xl border border-primary/20 bg-primary/10 p-4"><Sparkles className="mt-0.5 size-5 shrink-0 text-primary" /><div><strong>Seu espaço está pronto!</strong><p className="mt-1 text-sm text-muted-foreground">Comece com um registro e acompanhe cada pequena conquista.</p></div></div>}
     <section><h2 className="mb-3 text-lg font-semibold">Resumo do dia</h2><div className="grid gap-4 sm:grid-cols-3">
       <Card><CardHeader className="pb-3"><CardDescription>Último check-in</CardDescription><CardTitle className="flex items-center gap-2 text-lg"><ClipboardCheck className="size-5 text-primary" />{latestCheckin ? formatDate(`${latestCheckin.checkin_date}T12:00:00`) : 'Ainda não feito'}</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">{latestCheckin ? `Fome ${latestCheckin.hunger_level ?? '—'} · Energia ${latestCheckin.energy_level ?? '—'} · Sono ${latestCheckin.sleep_quality ?? '—'}` : 'Conte como você está em menos de um minuto.'}</p><Link href="/app/check-in" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">{latestCheckin ? 'Ver histórico' : 'Fazer check-in'} <ChevronRight className="size-4" /></Link></CardContent></Card>
