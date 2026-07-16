@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { CalendarDays, ChartNoAxesCombined, CircleUserRound, FileText, House, Leaf, LogOut, PlusCircle, ShieldCheck, WalletCards } from 'lucide-react';
+import { CalendarDays, ChartNoAxesCombined, CircleUserRound, FileText, House, Leaf, LogOut, PlusCircle, ShieldCheck, UtensilsCrossed, WalletCards } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +12,7 @@ const items = [
   { href: '/app/calendario', label: 'Calendário', icon: CalendarDays },
   { href: '/app/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
   { href: '/app/relatorios', label: 'Relatórios', icon: FileText },
+  { href: '/app/alimentacao', label: 'Alimentação', icon: UtensilsCrossed },
   { href: '/app/plano', label: 'Plano', icon: WalletCards },
   { href: '/app/privacidade', label: 'Privacidade', icon: ShieldCheck },
   { href: '/app/conta', label: 'Conta', icon: CircleUserRound },
