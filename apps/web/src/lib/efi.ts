@@ -1,3 +1,6 @@
+import * as fs from 'node:fs';
+import * as https from 'node:https';
+
 import type { PlanDefinition } from './sprint4';
 
 const SANDBOX_URL = 'https://pix-h.api.efipay.com.br';
@@ -6,6 +9,27 @@ const PRODUCTION_URL = 'https://pix.api.efipay.com.br';
 type EfiRecord = Record<string, unknown>;
 type CachedToken = { value: string; expiresAt: number; baseUrl: string };
 let cachedToken: CachedToken | null = null;
+
+function createAgent(): https.Agent | undefined {
+  const certPath = process.env.EFI_PIX_CERT;
+  const certB64 = process.env.EFI_PIX_CERT_BASE64;
+
+  if (certPath) {
+    return new https.Agent({
+      pfx: fs.readFileSync(certPath),
+      passphrase: '',
+    });
+  }
+
+  if (certB64) {
+    return new https.Agent({
+      pfx: Buffer.from(certB64, 'base64'),
+      passphrase: '',
+    });
+  }
+
+  return undefined;
+}
 
 function asRecord(value: unknown): EfiRecord {
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as EfiRecord : {};
@@ -46,7 +70,7 @@ async function accessToken(): Promise<string> {
   const baseUrl = pixBaseUrl();
   if (cachedToken && cachedToken.baseUrl === baseUrl && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
   const { clientId, clientSecret } = credentials();
-  const response = await fetch(`${baseUrl}/oauth/token`, {
+  const requestInit: RequestInit & { agent?: https.Agent } = {
     method: 'POST',
     headers: {
       authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
@@ -54,7 +78,9 @@ async function accessToken(): Promise<string> {
     },
     body: JSON.stringify({ grant_type: 'client_credentials' }),
     cache: 'no-store',
-  });
+    agent: createAgent(),
+  };
+  const response = await fetch(`${baseUrl}/oauth/token`, requestInit);
   const data = await parseResponse(response);
   const token = stringValue(data.access_token);
   if (!token) throw new Error('A Efí não retornou um token de acesso.');
@@ -65,7 +91,7 @@ async function accessToken(): Promise<string> {
 
 async function request(path: string, init: RequestInit = {}): Promise<EfiRecord> {
   const token = await accessToken();
-  const response = await fetch(`${pixBaseUrl()}${path}`, {
+  const requestInit: RequestInit & { agent?: https.Agent } = {
     ...init,
     headers: {
       authorization: `Bearer ${token}`,
@@ -73,7 +99,9 @@ async function request(path: string, init: RequestInit = {}): Promise<EfiRecord>
       ...init.headers,
     },
     cache: 'no-store',
-  });
+    agent: createAgent(),
+  };
+  const response = await fetch(`${pixBaseUrl()}${path}`, requestInit);
   if (response.status === 401) cachedToken = null;
   return parseResponse(response);
 }
