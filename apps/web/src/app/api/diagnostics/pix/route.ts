@@ -1,9 +1,29 @@
 import { NextResponse } from 'next/server';
+import * as https from 'node:https';
+
+function httpsRequest(url: string, options: { method: string; headers: Record<string, string>; agent?: https.Agent }, body?: string): Promise<{ status: number; body: any }> {
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(url);
+    const req = https.request(
+      { hostname: parsedUrl.hostname, path: parsedUrl.pathname + parsedUrl.search, method: options.method, headers: options.headers, agent: options.agent },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk: string) => (data += chunk));
+        res.on('end', () => {
+          try { resolve({ status: res.statusCode ?? 500, body: JSON.parse(data) }); }
+          catch { resolve({ status: res.statusCode ?? 500, body: data }); }
+        });
+      }
+    );
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
 
 export async function GET() {
   const results: Record<string, string> = {};
 
-  // Check env vars (masked)
   results['EFI_PIX_CLIENT_ID'] = process.env.EFI_PIX_CLIENT_ID ? '✅ configurado' : '❌ ausente';
   results['EFI_PIX_CLIENT_SECRET'] = process.env.EFI_PIX_CLIENT_SECRET ? '✅ configurado' : '❌ ausente';
   results['PIX_KEY'] = process.env.PIX_KEY ? '✅ configurado' : '❌ ausente';
@@ -11,16 +31,13 @@ export async function GET() {
   results['EFI_PIX_CERT'] = process.env.EFI_PIX_CERT ? '✅ configurado' : 'não usado';
   results['EFI_PIX_CERT_BASE64'] = process.env.EFI_PIX_CERT_BASE64 ? `✅ configurado (${process.env.EFI_PIX_CERT_BASE64.length} chars)` : '❌ ausente';
 
-  // Try to create the mTLS agent
   try {
-    const https = await import('node:https');
-    const fs = await import('node:fs');
-    
     const certPath = process.env.EFI_PIX_CERT;
     const certB64 = process.env.EFI_PIX_CERT_BASE64;
-    
     let agent;
+
     if (certPath) {
+      const fs = await import('node:fs');
       agent = new https.Agent({ pfx: fs.readFileSync(certPath), passphrase: '' });
       results['agent'] = '✅ criado via arquivo';
     } else if (certB64) {
@@ -30,37 +47,40 @@ export async function GET() {
       results['agent'] = '❌ sem certificado';
     }
 
-    // Try to call PIX API
     if (agent) {
-      try {
-        const clientId = process.env.EFI_PIX_CLIENT_ID;
-        const clientSecret = process.env.EFI_PIX_CLIENT_SECRET;
-        const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+      const auth = Buffer.from(`${process.env.EFI_PIX_CLIENT_ID}:${process.env.EFI_PIX_CLIENT_SECRET}`).toString('base64');
+      const { status, body } = await httpsRequest('https://pix.api.efipay.com.br/oauth/token', {
+        method: 'POST',
+        headers: { authorization: `Basic ${auth}`, 'content-type': 'application/json' },
+        agent,
+      }, JSON.stringify({ grant_type: 'client_credentials' }));
+
+      if (status === 200 && body?.access_token) {
+        results['pix_auth'] = '✅ Token obtido!';
         
-        const response = await fetch('https://pix.api.efipay.com.br/oauth/token', {
+        // Try creating a PIX charge
+        const { status: chargeStatus, body: chargeBody } = await httpsRequest('https://pix.api.efipay.com.br/v2/cob', {
           method: 'POST',
-          headers: {
-            authorization: `Basic ${auth}`,
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({ grant_type: 'client_credentials' }),
-          // @ts-expect-error - agent not in fetch types
+          headers: { authorization: `Bearer ${body.access_token}`, 'content-type': 'application/json' },
           agent,
-        });
-        
-        if (response.ok) {
-          const data = await response.json() as Record<string, unknown>;
-          results['pix_auth'] = data.access_token ? '✅ Token obtido!' : '❌ Sem token';
+        }, JSON.stringify({
+          calendario: { expiracao: 3600 },
+          valor: { original: '0.01' },
+          chave: process.env.PIX_KEY,
+          solicitacaoPagador: 'Jornada Leve - Diagnóstico'
+        }));
+
+        if (chargeStatus === 201) {
+          results['pix_charge'] = `✅ Criada! txid: ${chargeBody?.txid || '?'}`;
         } else {
-          const err = await response.text().catch(() => 'unknown');
-          results['pix_auth'] = `❌ HTTP ${response.status}: ${err.substring(0, 100)}`;
+          results['pix_charge'] = `❌ HTTP ${chargeStatus}: ${typeof chargeBody === 'string' ? chargeBody.substring(0, 100) : JSON.stringify(chargeBody).substring(0, 100)}`;
         }
-      } catch (err) {
-        results['pix_auth'] = `❌ Erro: ${err instanceof Error ? err.message : 'unknown'}`;
+      } else {
+        results['pix_auth'] = `❌ HTTP ${status}: ${typeof body === 'string' ? body.substring(0, 100) : JSON.stringify(body).substring(0, 100)}`;
       }
     }
   } catch (err) {
-    results['agent_error'] = err instanceof Error ? err.message : 'unknown';
+    results['error'] = err instanceof Error ? err.message.substring(0, 200) : 'unknown';
   }
 
   return NextResponse.json(results);

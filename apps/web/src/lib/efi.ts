@@ -32,7 +32,9 @@ function createAgent(): https.Agent | undefined {
 }
 
 function asRecord(value: unknown): EfiRecord {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as EfiRecord : {};
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as EfiRecord)
+    : {};
 }
 
 function stringValue(value: unknown): string | null {
@@ -56,32 +58,79 @@ export function pixBaseUrl() {
   return process.env.EFI_SANDBOX?.toLowerCase() === 'true' ? SANDBOX_URL : PRODUCTION_URL;
 }
 
-async function parseResponse(response: Response): Promise<EfiRecord> {
-  const data: unknown = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const body = asRecord(data);
-    const message = stringValue(body.error_description ?? body.message ?? body.error) ?? 'Falha na comunicação com a Efí.';
+type HttpsRequestOptions = {
+  method: string;
+  headers: Record<string, string>;
+  agent?: https.Agent;
+};
+
+function httpsRequest(
+  url: string,
+  options: HttpsRequestOptions,
+  body?: string,
+): Promise<{ status: number; body: unknown }> {
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(url);
+    const req = https.request(
+      {
+        hostname: parsedUrl.hostname,
+        path: parsedUrl.pathname + parsedUrl.search,
+        method: options.method,
+        headers: options.headers,
+        agent: options.agent,
+      },
+      (res) => {
+        let data = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk: string) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          try {
+            resolve({ status: res.statusCode ?? 500, body: JSON.parse(data) as unknown });
+          } catch {
+            resolve({ status: res.statusCode ?? 500, body: data });
+          }
+        });
+      },
+    );
+
+    req.on('error', reject);
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+function parseResponse(response: { status: number; body: unknown }): EfiRecord {
+  if (response.status < 200 || response.status >= 300) {
+    const body = asRecord(response.body);
+    const message =
+      stringValue(body.error_description ?? body.message ?? body.error) ??
+      'Falha na comunicação com a Efí.';
     throw new Error(message);
   }
-  return asRecord(data);
+  return asRecord(response.body);
 }
 
 async function accessToken(): Promise<string> {
   const baseUrl = pixBaseUrl();
-  if (cachedToken && cachedToken.baseUrl === baseUrl && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
+  if (cachedToken && cachedToken.baseUrl === baseUrl && cachedToken.expiresAt > Date.now() + 60_000)
+    return cachedToken.value;
   const { clientId, clientSecret } = credentials();
-  const requestInit: RequestInit & { agent?: https.Agent } = {
-    method: 'POST',
-    headers: {
-      authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-      'content-type': 'application/json',
+  const body = JSON.stringify({ grant_type: 'client_credentials' });
+  const response = await httpsRequest(
+    `${baseUrl}/oauth/token`,
+    {
+      method: 'POST',
+      headers: {
+        authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        'content-type': 'application/json',
+      },
+      agent: createAgent(),
     },
-    body: JSON.stringify({ grant_type: 'client_credentials' }),
-    cache: 'no-store',
-    agent: createAgent(),
-  };
-  const response = await fetch(`${baseUrl}/oauth/token`, requestInit);
-  const data = await parseResponse(response);
+    body,
+  );
+  const data = parseResponse(response);
   const token = stringValue(data.access_token);
   if (!token) throw new Error('A Efí não retornou um token de acesso.');
   const expiresIn = Number(data.expires_in ?? 3600);
@@ -91,17 +140,22 @@ async function accessToken(): Promise<string> {
 
 async function request(path: string, init: RequestInit = {}): Promise<EfiRecord> {
   const token = await accessToken();
-  const requestInit: RequestInit & { agent?: https.Agent } = {
-    ...init,
-    headers: {
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json',
-      ...init.headers,
+  const headers = new Headers(init.headers);
+  headers.set('authorization', `Bearer ${token}`);
+  if (!headers.has('content-type')) headers.set('content-type', 'application/json');
+  const requestHeaders: Record<string, string> = {};
+  headers.forEach((value, key) => {
+    requestHeaders[key] = value;
+  });
+  const response = await httpsRequest(
+    `${pixBaseUrl()}${path}`,
+    {
+      method: init.method ?? 'GET',
+      headers: requestHeaders,
+      agent: createAgent(),
     },
-    cache: 'no-store',
-    agent: createAgent(),
-  };
-  const response = await fetch(`${pixBaseUrl()}${path}`, requestInit);
+    typeof init.body === 'string' ? init.body : undefined,
+  );
   if (response.status === 401) cachedToken = null;
   return parseResponse(response);
 }
@@ -160,13 +214,18 @@ export function normalizePixWebhook(payload: unknown): NormalizedPixWebhook | nu
   return {
     status,
     txid,
-    eventId: stringValue(pix.endToEndId ?? pix.end_to_end_id ?? root.id) ?? `${txid}:${stringValue(pix.horario) ?? status}`,
+    eventId:
+      stringValue(pix.endToEndId ?? pix.end_to_end_id ?? root.id) ??
+      `${txid}:${stringValue(pix.horario) ?? status}`,
     amountCents: Number.isFinite(value) ? Math.round(value * 100) : null,
   };
 }
 
 export async function cancelEfiSubscription(subscriptionId: string) {
-  return request(`/v2/subscription/${encodeURIComponent(subscriptionId)}/cancel`, { method: 'POST', body: '{}' });
+  return request(`/v2/subscription/${encodeURIComponent(subscriptionId)}/cancel`, {
+    method: 'POST',
+    body: '{}',
+  });
 }
 
 export async function getEfiSubscription(subscriptionId: string) {
@@ -174,5 +233,8 @@ export async function getEfiSubscription(subscriptionId: string) {
 }
 
 export async function retryEfiSubscription(subscriptionId: string) {
-  return request(`/v2/subscription/${encodeURIComponent(subscriptionId)}/retry`, { method: 'POST', body: '{}' });
+  return request(`/v2/subscription/${encodeURIComponent(subscriptionId)}/retry`, {
+    method: 'POST',
+    body: '{}',
+  });
 }
