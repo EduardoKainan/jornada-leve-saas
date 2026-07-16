@@ -1,0 +1,1 @@
+export default function BillingLoading() { return <div className="animate-pulse space-y-5"><div className="h-24 rounded-2xl bg-muted" /><div className="grid gap-5 md:grid-cols-2"><div className="h-44 rounded-2xl bg-muted" /><div className="h-44 rounded-2xl bg-muted" /></div><div className="h-64 rounded-2xl bg-muted" /></div>; }

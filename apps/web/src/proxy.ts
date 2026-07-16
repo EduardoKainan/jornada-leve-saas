@@ -41,6 +41,23 @@ export async function proxy(request: NextRequest) {
   if (user && (path === '/entrar' || path === '/cadastro')) {
     return redirect('/app');
   }
+
+  const billingRoute = path === '/app/plano' || path.startsWith('/app/plano/') || path === '/app/cobranca' || path.startsWith('/app/cobranca/');
+  if (user && path.startsWith('/app') && !billingRoute) {
+    const { data: subscription, error: subscriptionError } = await supabase.from('subscriptions')
+      .select('status, trial_ends_at, current_period_end')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!subscriptionError) {
+      const now = Date.now();
+      const active = subscription?.status === 'active' || subscription?.status === 'grace_period';
+      const trialActive = subscription?.status === 'trialing' && Boolean(subscription.trial_ends_at) && new Date(subscription.trial_ends_at).getTime() > now;
+      const canceledAtPeriodEndActive = subscription?.status === 'canceled_end_of_period' && Boolean(subscription.current_period_end) && new Date(subscription.current_period_end).getTime() > now;
+      if (!active && !trialActive && !canceledAtPeriodEndActive) return redirect('/app/plano');
+    }
+  }
   return response;
 }
 

@@ -49,19 +49,18 @@ export function AuthForm({ mode }: { mode: Mode }) {
           throw new Error(result.error || 'Erro ao criar conta.');
         }
 
-        // Login automático após criar a conta
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) {
-          toast.success('Conta criada! Faça login para continuar.');
-          router.replace('/entrar');
+        if (result.session) {
+          // Set session via Supabase cookies
+          await supabase.auth.setSession({
+            access_token: result.session.access_token,
+            refresh_token: result.session.refresh_token,
+          });
+          toast.success(result.type === 'login' ? 'Bem-vindo de volta!' : 'Conta criada com sucesso!');
+          router.replace('/onboarding');
           router.refresh();
         } else {
-          toast.success('Conta criada com sucesso!');
-          router.replace('/onboarding');
+          toast.success('Conta criada! Faça login para continuar.');
+          router.replace('/entrar');
           router.refresh();
         }
         return;

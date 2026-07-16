@@ -1,0 +1,1 @@
+export default function PlansLoading() { return <div className="animate-pulse space-y-6"><div className="h-24 rounded-2xl bg-muted" /><div className="grid gap-5 lg:grid-cols-3"><div className="h-[430px] rounded-2xl bg-muted" /><div className="h-[430px] rounded-2xl bg-muted" /><div className="h-[430px] rounded-2xl bg-muted" /></div></div>; }
