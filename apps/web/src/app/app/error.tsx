@@ -1,0 +1,3 @@
+'use client';
+import { Button } from '@/components/ui/button';
+export default function DashboardError({ reset }: { reset: () => void }) { return <div className="grid min-h-[60vh] place-items-center text-center"><div><h1 className="text-2xl font-semibold">Não foi possível carregar seu painel</h1><p className="mt-2 mb-5 text-muted-foreground">Confira sua conexão e tente novamente.</p><Button onClick={reset}>Tentar novamente</Button></div></div>; }

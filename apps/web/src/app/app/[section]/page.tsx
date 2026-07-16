@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import { ArrowLeft, Construction } from 'lucide-react';
+
+const titles: Record<string, string> = { registrar: 'Novo registro', calendario: 'Calendário', evolucao: 'Evolução', conta: 'Sua conta' };
+export default async function AppSection({ params }: { params: Promise<{ section: string }> }) { const { section } = await params; const title = titles[section] ?? 'Página'; return <div className="grid min-h-[65vh] place-items-center text-center"><div><div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-primary/10"><Construction className="size-7 text-primary" /></div><h1 className="text-2xl font-bold">{title}</h1><p className="mt-2 max-w-sm text-muted-foreground">Esta área já está na navegação e será expandida nos próximos sprints.</p><Link className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline" href="/app"><ArrowLeft className="size-4" /> Voltar ao início</Link></div></div>; }
