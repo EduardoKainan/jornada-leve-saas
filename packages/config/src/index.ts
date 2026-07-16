@@ -12,9 +12,11 @@ export const envSchema = z.object({
   // Resend
   RESEND_API_KEY: z.string().min(1).optional(),
 
-  // Efí (somente servidor)
-  EFI_CLIENT_ID: z.string().min(1).optional(),
-  EFI_CLIENT_SECRET: z.string().min(1).optional(),
+  // Efí PIX (somente servidor)
+  EFI_PIX_CLIENT_ID: z.string().min(1).optional(),
+  EFI_PIX_CLIENT_SECRET: z.string().min(1).optional(),
+  PIX_KEY: z.string().min(1).optional(),
+  EFI_PIX_CERT: z.string().min(1).optional(),
   EFI_SANDBOX: z.enum(['true', 'false']).default('true').transform((value) => value === 'true'),
   EFI_WEBHOOK_TOKEN: z.string().min(16).optional(),
 

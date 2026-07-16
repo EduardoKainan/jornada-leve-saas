@@ -1,11 +1,10 @@
 import type { PlanDefinition } from './sprint4';
 
-const SANDBOX_URL = 'https://cobrancas-h.api.efipay.com.br';
-const PRODUCTION_URL = 'https://cobrancas.api.efipay.com.br';
+const SANDBOX_URL = 'https://pix-h.api.efipay.com.br';
+const PRODUCTION_URL = 'https://pix.api.efipay.com.br';
 
 type EfiRecord = Record<string, unknown>;
-
-type CachedToken = { value: string; expiresAt: number };
+type CachedToken = { value: string; expiresAt: number; baseUrl: string };
 let cachedToken: CachedToken | null = null;
 
 function asRecord(value: unknown): EfiRecord {
@@ -17,14 +16,20 @@ function stringValue(value: unknown): string | null {
 }
 
 function credentials() {
-  const clientId = process.env.EFI_CLIENT_ID?.trim();
-  const clientSecret = process.env.EFI_CLIENT_SECRET?.trim();
-  if (!clientId || !clientSecret) throw new Error('Credenciais da Efí não configuradas.');
+  const clientId = process.env.EFI_PIX_CLIENT_ID?.trim();
+  const clientSecret = process.env.EFI_PIX_CLIENT_SECRET?.trim();
+  if (!clientId || !clientSecret) throw new Error('Credenciais PIX da Efí não configuradas.');
   return { clientId, clientSecret };
 }
 
-export function efiBaseUrl() {
-  return process.env.EFI_SANDBOX?.toLowerCase() === 'false' ? PRODUCTION_URL : SANDBOX_URL;
+function pixKey() {
+  const key = process.env.PIX_KEY?.trim();
+  if (!key) throw new Error('Chave PIX não configurada.');
+  return key;
+}
+
+export function pixBaseUrl() {
+  return process.env.EFI_SANDBOX?.toLowerCase() === 'true' ? SANDBOX_URL : PRODUCTION_URL;
 }
 
 async function parseResponse(response: Response): Promise<EfiRecord> {
@@ -38,9 +43,10 @@ async function parseResponse(response: Response): Promise<EfiRecord> {
 }
 
 async function accessToken(): Promise<string> {
-  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
+  const baseUrl = pixBaseUrl();
+  if (cachedToken && cachedToken.baseUrl === baseUrl && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
   const { clientId, clientSecret } = credentials();
-  const response = await fetch(`${efiBaseUrl()}/oauth/token`, {
+  const response = await fetch(`${baseUrl}/oauth/token`, {
     method: 'POST',
     headers: {
       authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
@@ -53,13 +59,13 @@ async function accessToken(): Promise<string> {
   const token = stringValue(data.access_token);
   if (!token) throw new Error('A Efí não retornou um token de acesso.');
   const expiresIn = Number(data.expires_in ?? 3600);
-  cachedToken = { value: token, expiresAt: Date.now() + Math.max(300, expiresIn) * 1000 };
+  cachedToken = { value: token, expiresAt: Date.now() + Math.max(300, expiresIn) * 1000, baseUrl };
   return token;
 }
 
 async function request(path: string, init: RequestInit = {}): Promise<EfiRecord> {
   const token = await accessToken();
-  const response = await fetch(`${efiBaseUrl()}${path}`, {
+  const response = await fetch(`${pixBaseUrl()}${path}`, {
     ...init,
     headers: {
       authorization: `Bearer ${token}`,
@@ -72,39 +78,63 @@ async function request(path: string, init: RequestInit = {}): Promise<EfiRecord>
   return parseResponse(response);
 }
 
-export type EfiChargeResult = {
+export type PixChargeResult = {
+  txid: string;
   chargeId: string;
-  checkoutUrl: string;
+  qrCodeImage: string;
+  pixCopiaECola: string;
 };
 
-export async function createEfiCharge(input: {
+export async function createPixCharge(input: {
   plan: PlanDefinition;
-  name: string;
-  email: string;
-  callbackUrl: string;
-}): Promise<EfiChargeResult> {
-  const expireAt = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
-  const response = await request('/v1/charge', {
+  userId: string;
+}): Promise<PixChargeResult> {
+  const charge = await request('/v2/cob', {
     method: 'POST',
     body: JSON.stringify({
-      items: [{
-        name: `Jornada Leve - Plano ${input.plan.name}`,
-        value: input.plan.priceCents,
-        amount: 1,
-      }],
-      payment: {
-        banking_billet: { expire_at: expireAt },
-        status: 'created',
-      },
-      customer: { name: input.name, email: input.email },
-      redirect_url: input.callbackUrl,
+      calendario: { expiracao: 3600 },
+      valor: { original: (input.plan.priceCents / 100).toFixed(2) },
+      chave: pixKey(),
+      solicitacaoPagador: `Jornada Leve - Plano ${input.plan.name}`,
+      infoAdicionais: [
+        { nome: 'user_id', valor: input.userId },
+        { nome: 'plano', valor: input.plan.code },
+      ],
     }),
   });
-  const data = asRecord(response.data);
-  const chargeId = stringValue(response.charge_id ?? data.charge_id ?? response.id ?? data.id);
-  const checkoutUrl = stringValue(response.checkout_url ?? response.payment_url ?? data.checkout_url ?? data.payment_url);
-  if (!chargeId || !checkoutUrl) throw new Error('A Efí não retornou os dados do link de pagamento.');
-  return { chargeId, checkoutUrl };
+  const txid = stringValue(charge.txid);
+  const locationId = stringValue(asRecord(charge.loc).id);
+  if (!txid || !locationId) throw new Error('A Efí não retornou os dados da cobrança PIX.');
+
+  const qrCode = await request(`/v2/loc/${encodeURIComponent(locationId)}/qrcode`);
+  const pixCopiaECola = stringValue(qrCode.qrcode);
+  const qrCodeImage = stringValue(qrCode.imagemQrcode);
+  if (!pixCopiaECola || !qrCodeImage) throw new Error('A Efí não retornou o QR Code PIX.');
+
+  return { txid, chargeId: txid, qrCodeImage, pixCopiaECola };
+}
+
+export type NormalizedPixWebhook = {
+  status: string;
+  txid: string;
+  eventId: string;
+  amountCents: number | null;
+};
+
+export function normalizePixWebhook(payload: unknown): NormalizedPixWebhook | null {
+  const root = asRecord(payload);
+  const pixEntries = Array.isArray(root.pix) ? root.pix : [];
+  const pix = asRecord(pixEntries[0] ?? root);
+  const txid = stringValue(pix.txid ?? root.txid);
+  if (!txid) return null;
+  const status = (stringValue(root.status ?? pix.status) ?? 'CONCLUIDA').toUpperCase();
+  const value = Number(pix.valor ?? root.valor);
+  return {
+    status,
+    txid,
+    eventId: stringValue(pix.endToEndId ?? pix.end_to_end_id ?? root.id) ?? `${txid}:${stringValue(pix.horario) ?? status}`,
+    amountCents: Number.isFinite(value) ? Math.round(value * 100) : null,
+  };
 }
 
 export async function cancelEfiSubscription(subscriptionId: string) {

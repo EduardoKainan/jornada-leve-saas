@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
-import { createEfiCharge } from '@/lib/efi';
+import { createPixCharge } from '@/lib/efi';
 import { PLANS } from '@/lib/sprint4';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -43,26 +43,25 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || request.nextUrl.origin;
-    const profileName = typeof user.user_metadata.display_name === 'string' ? user.user_metadata.display_name : null;
-    const result = await createEfiCharge({
-      plan,
-      name: profileName?.trim() || user.email?.split('@')[0] || 'Cliente Jornada Leve',
-      email: user.email || '',
-      callbackUrl: `${appUrl}/app/cobranca?checkout=retorno`,
-    });
-    const { error } = await admin.from('subscriptions').insert({
+    const result = await createPixCharge({ plan, userId: user.id });
+    const { data: subscription, error } = await admin.from('subscriptions').insert({
       user_id: user.id,
       provider: 'efi',
-      provider_subscription_id: result.chargeId,
+      provider_subscription_id: result.txid,
       plan_code: plan.code,
       status: 'past_due',
       cancel_at_period_end: false,
-    });
+    }).select('id, status, plan_code').single();
     if (error) throw new Error('Não foi possível salvar a assinatura.');
-    return NextResponse.json({ checkoutUrl: result.checkoutUrl, chargeId: result.chargeId }, { status: 201 });
+    return NextResponse.json({
+      subscription,
+      txid: result.txid,
+      chargeId: result.chargeId,
+      qrCodeImage: result.qrCodeImage,
+      pixCopiaECola: result.pixCopiaECola,
+    }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Não foi possível iniciar o checkout.';
+    const message = error instanceof Error ? error.message : 'Não foi possível gerar a cobrança PIX.';
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }
