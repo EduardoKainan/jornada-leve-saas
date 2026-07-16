@@ -8,12 +8,15 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types src/lib/*.test.ts",
+    "test:e2e": "playwright test",
     "clean": "rm -rf .next dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@jornada-leve/config": "*",
     "@jornada-leve/db": "*",
+    "@jornada-leve/email": "*",
     "@supabase/ssr": "^0.6.0",
     "@supabase/supabase-js": "^2.49.0",
     "class-variance-authority": "^0.7.0",
@@ -35,6 +38,7 @@
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
     "@next/eslint-plugin-next": "^16.0.10",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",

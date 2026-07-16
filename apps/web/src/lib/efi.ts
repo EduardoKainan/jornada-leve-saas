@@ -1,7 +1,7 @@
 import type { PlanDefinition } from './sprint4';
 
-const SANDBOX_URL = 'https://sandbox.efipay.com.br';
-const PRODUCTION_URL = 'https://api.efipay.com.br';
+const SANDBOX_URL = 'https://cobrancas-h.api.efipay.com.br';
+const PRODUCTION_URL = 'https://cobrancas.api.efipay.com.br';
 
 type EfiRecord = Record<string, unknown>;
 
