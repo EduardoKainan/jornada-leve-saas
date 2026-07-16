@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
-import { createEfiSubscription } from '@/lib/efi';
+import { createEfiCharge } from '@/lib/efi';
 import { PLANS } from '@/lib/sprint4';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -45,9 +45,8 @@ export async function POST(request: NextRequest) {
   try {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || request.nextUrl.origin;
     const profileName = typeof user.user_metadata.display_name === 'string' ? user.user_metadata.display_name : null;
-    const result = await createEfiSubscription({
+    const result = await createEfiCharge({
       plan,
-      userId: user.id,
       name: profileName?.trim() || user.email?.split('@')[0] || 'Cliente Jornada Leve',
       email: user.email || '',
       callbackUrl: `${appUrl}/app/cobranca?checkout=retorno`,
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
     const { error } = await admin.from('subscriptions').insert({
       user_id: user.id,
       provider: 'efi',
-      provider_subscription_id: result.subscriptionId,
+      provider_subscription_id: result.chargeId,
       plan_code: plan.code,
       status: 'past_due',
       cancel_at_period_end: false,

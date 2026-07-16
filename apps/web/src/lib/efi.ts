@@ -72,55 +72,39 @@ async function request(path: string, init: RequestInit = {}): Promise<EfiRecord>
   return parseResponse(response);
 }
 
-function configuredPlanId(code: PlanDefinition['code']): string | null {
-  const key = code === 'monthly' ? 'EFI_MONTHLY_PLAN_ID' : code === 'annual' ? 'EFI_ANNUAL_PLAN_ID' : null;
-  return key ? process.env[key]?.trim() || null : null;
-}
-
-async function createProviderPlan(plan: PlanDefinition): Promise<string> {
-  const configured = configuredPlanId(plan.code);
-  if (configured) return configured;
-  const data = await request('/v2/plan', {
-    method: 'POST',
-    body: JSON.stringify({
-      name: `Jornada Leve ${plan.name}`,
-      interval: plan.intervalDays,
-      repeats: null,
-    }),
-  });
-  const id = stringValue(data.plan_id ?? asRecord(data.data).plan_id ?? data.id);
-  if (!id) throw new Error('A Efí não retornou o identificador do plano.');
-  return id;
-}
-
-export type EfiSubscriptionResult = {
-  subscriptionId: string;
-  chargeId: string | null;
+export type EfiChargeResult = {
+  chargeId: string;
   checkoutUrl: string;
 };
 
-export async function createEfiSubscription(input: {
+export async function createEfiCharge(input: {
   plan: PlanDefinition;
-  userId: string;
   name: string;
   email: string;
   callbackUrl: string;
-}): Promise<EfiSubscriptionResult> {
-  const planId = await createProviderPlan(input.plan);
-  const response = await request(`/v2/plan/${encodeURIComponent(planId)}/subscribe`, {
+}): Promise<EfiChargeResult> {
+  const expireAt = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
+  const response = await request('/v1/charge', {
     method: 'POST',
     body: JSON.stringify({
-      external_reference: input.userId,
+      items: [{
+        name: `Jornada Leve - Plano ${input.plan.name}`,
+        value: input.plan.priceCents,
+        amount: 1,
+      }],
+      payment: {
+        banking_billet: { expire_at: expireAt },
+        status: 'created',
+      },
       customer: { name: input.name, email: input.email },
       redirect_url: input.callbackUrl,
     }),
   });
   const data = asRecord(response.data);
-  const subscriptionId = stringValue(response.subscription_id ?? data.subscription_id ?? response.id);
-  const chargeId = stringValue(response.charge_id ?? data.charge_id);
+  const chargeId = stringValue(response.charge_id ?? data.charge_id ?? response.id ?? data.id);
   const checkoutUrl = stringValue(response.checkout_url ?? response.payment_url ?? data.checkout_url ?? data.payment_url);
-  if (!subscriptionId || !checkoutUrl) throw new Error('A Efí não retornou os dados do checkout.');
-  return { subscriptionId, chargeId, checkoutUrl };
+  if (!chargeId || !checkoutUrl) throw new Error('A Efí não retornou os dados do link de pagamento.');
+  return { chargeId, checkoutUrl };
 }
 
 export async function cancelEfiSubscription(subscriptionId: string) {

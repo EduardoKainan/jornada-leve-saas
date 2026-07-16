@@ -27,12 +27,13 @@ export async function POST(request: NextRequest) {
   const normalized = normalizeEfiWebhook(payload);
   const type = normalized.type.toLowerCase();
   if (!acceptedEvents.has(type)) return NextResponse.json({ received: true, ignored: true });
-  if (!normalized.subscriptionId) return NextResponse.json({ error: 'Assinatura ausente no evento.' }, { status: 400 });
+  const providerChargeId = normalized.chargeId ?? normalized.subscriptionId;
+  if (!providerChargeId) return NextResponse.json({ error: 'Cobrança ausente no evento.' }, { status: 400 });
 
   const admin = createAdminClient();
   const payloadHash = createHash('sha256').update(rawBody).digest('hex');
   const rawEventId = normalized.eventId || payloadHash;
-  const providerEventId = `${normalized.subscriptionId}:${rawEventId}`;
+  const providerEventId = `${providerChargeId}:${rawEventId}`;
   const { data: existing } = await admin.from('payment_events').select('id').eq('provider_event_id', providerEventId).maybeSingle();
   if (existing) return NextResponse.json({ received: true, duplicate: true });
 
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
   if (insertError || !paymentEvent) return NextResponse.json({ error: 'Não foi possível registrar o evento.' }, { status: 500 });
 
   const { data: subscription } = await admin.from('subscriptions')
-    .select('id, user_id, plan_code').eq('provider_subscription_id', normalized.subscriptionId).maybeSingle();
+    .select('id, user_id, plan_code').eq('provider_subscription_id', providerChargeId).maybeSingle();
   if (!subscription) {
     await admin.from('payment_events').update({ processed_at: new Date().toISOString(), outcome: JSON.stringify({ ...safeDetails, processing: 'subscription_not_found' }) }).eq('id', paymentEvent.id);
     return NextResponse.json({ received: true, matched: false });
@@ -75,12 +76,12 @@ export async function POST(request: NextRequest) {
     await admin.from('notification_jobs').upsert(schedules.map((scheduledAt, index) => ({
       user_id: subscription.user_id,
       event_type: 'dunning_retry',
-      related_id: normalized.subscriptionId,
+      related_id: providerChargeId,
       scheduled_at: scheduledAt.toISOString(),
       channel: 'email',
       template_key: `dunning_retry_${index + 1}`,
       status: 'pending',
-      idempotency_key: `dunning:${normalized.subscriptionId}:${rawEventId}:${index + 1}`,
+      idempotency_key: `dunning:${providerChargeId}:${rawEventId}:${index + 1}`,
     })), { onConflict: 'idempotency_key', ignoreDuplicates: true });
     const { data: authUser } = await admin.auth.admin.getUserById(subscription.user_id);
     if (authUser.user?.email) await sendDunningEmail(authUser.user.email, 'payment_failed');
