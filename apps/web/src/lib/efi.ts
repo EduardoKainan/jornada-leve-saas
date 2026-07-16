@@ -14,18 +14,25 @@ function createAgent(): https.Agent | undefined {
   const certPath = process.env.EFI_PIX_CERT;
   const certB64 = process.env.EFI_PIX_CERT_BASE64;
 
-  if (certPath) {
+  function pemAgent(certPem: string) {
+    // Find the certificate and private key blocks in the PEM string
+    const certMatch = certPem.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/);
+    const keyMatch = certPem.match(/-----BEGIN PRIVATE KEY-----[\s\S]*?-----END PRIVATE KEY-----/);
+    
     return new https.Agent({
-      pfx: fs.readFileSync(certPath),
-      passphrase: '',
+      cert: certMatch?.[0] || certPem,
+      key: keyMatch?.[0],
+      rejectUnauthorized: false,
     });
   }
 
+  if (certPath) {
+    const fs = require('node:fs') as typeof import('node:fs');
+    return pemAgent(fs.readFileSync(certPath, 'utf8'));
+  }
+
   if (certB64) {
-    return new https.Agent({
-      pfx: Buffer.from(certB64, 'base64'),
-      passphrase: '',
-    });
+    return pemAgent(Buffer.from(certB64, 'base64').toString('utf8'));
   }
 
   return undefined;

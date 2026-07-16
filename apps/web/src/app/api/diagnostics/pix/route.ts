@@ -38,11 +38,17 @@ export async function GET() {
 
     if (certPath) {
       const fs = await import('node:fs');
-      agent = new https.Agent({ pfx: fs.readFileSync(certPath), passphrase: '' });
-      results['agent'] = '✅ criado via arquivo';
+      const certPem = fs.readFileSync(certPath, 'utf8');
+      const certMatch = certPem.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/);
+      const keyMatch = certPem.match(/-----BEGIN PRIVATE KEY-----[\s\S]*?-----END PRIVATE KEY-----/);
+      agent = new https.Agent({ cert: certMatch?.[0] || certPem, key: keyMatch?.[0], rejectUnauthorized: false });
+      results['agent'] = '✅ criado via arquivo (PEM)';
     } else if (certB64) {
-      agent = new https.Agent({ pfx: Buffer.from(certB64, 'base64'), passphrase: '' });
-      results['agent'] = '✅ criado via base64';
+      const certPem = Buffer.from(certB64, 'base64').toString('utf8');
+      const certMatch = certPem.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/);
+      const keyMatch = certPem.match(/-----BEGIN PRIVATE KEY-----[\s\S]*?-----END PRIVATE KEY-----/);
+      agent = new https.Agent({ cert: certMatch?.[0] || certPem, key: keyMatch?.[0], rejectUnauthorized: false });
+      results['agent'] = '✅ criado via base64 (PEM)';
     } else {
       results['agent'] = '❌ sem certificado';
     }
