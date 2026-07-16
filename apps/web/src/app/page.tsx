@@ -362,6 +362,90 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ═══════ Alimentação — Mounjaro ═══════ */}
+        <section className="bg-gradient-to-b from-white to-green-50 py-20 sm:py-28" aria-labelledby="alimentacao-title">
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div className="mx-auto max-w-2xl text-center">
+              <span className="inline-block rounded-full bg-green-100 px-4 py-1.5 text-xs font-semibold text-green-700 uppercase tracking-wide">
+                Dicas práticas
+              </span>
+              <h2 id="alimentacao-title" className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-5xl">
+                O que comer no dia a dia com Mounjaro?
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Pequenas escolhas fazem diferença. Separei sugestões simples com comidas típicas brasileiras
+                que ajudam a manter uma alimentação equilibrada durante o tratamento.
+              </p>
+            </div>
+
+            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Card 1 */}
+              <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🥗</div>
+                <h3 className="mt-4 font-semibold text-lg">Café da manhã leve</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Fruta picada (mamão, banana, maçã) com aveia e um fio de mel. Ou tapioca recheada com
+                  queijo branco e orégano. Rápido, prático e não pesa no estômago.
+                </p>
+              </div>
+
+              {/* Card 2 */}
+              <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🍛</div>
+                <h3 className="mt-4 font-semibold text-lg">Almoço equilibrado</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Arroz, feijão, salada verde e uma proteína magra (frango grelhado, peixe, ovo). 
+                  O clássico brasileiro continua sendo uma das refeições mais completas — sem exageros.
+                </p>
+              </div>
+
+              {/* Card 3 */}
+              <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🥤</div>
+                <h3 className="mt-4 font-semibold text-lg">Hidratação é chave</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Água de coco, suco natural (limão, maracujá, acerola) e muita água. Evite refrigerante
+                  e suco de caixinha — o sódio e açúcar escondidos atrapalham qualquer tratamento.
+                </p>
+              </div>
+
+              {/* Card 4 */}
+              <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🥜</div>
+                <h3 className="mt-4 font-semibold text-lg">Lanches inteligentes</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Castanhas, amendoim torrado sem sal, iogurte natural com granola, ou uma banana com
+                  pasta de amendoim. Satisfaz a fome entre as refeições sem exagerar nas calorias.
+                </p>
+              </div>
+
+              {/* Card 5 */}
+              <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">🍳</div>
+                <h3 className="mt-4 font-semibold text-lg">Jantar sem culpa</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Omelete com legumes (cenoura, abobrinha, cebola), caldo de legumes caseiro, ou
+                  creme de abóbora com gengibre. Refeições mornas e leves pra fechar o dia bem.
+                </p>
+              </div>
+
+              {/* Card 6 */}
+              <div className="rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex size-12 items-center justify-center rounded-full bg-green-100 text-2xl">✅</div>
+                <h3 className="mt-4 font-semibold text-lg">O que evitar</h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Frituras, embutidos (linguiça, salsicha, presunto), refrigerante, bebida alcoólica
+                  e doces industrializados. Não precisa cortar tudo — só reduzir já faz diferença.
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-10 text-center text-xs text-muted-foreground">
+              ⚕️ Essas são sugestões gerais. Consulte seu nutricionista para um plano alimentar adequado ao seu tratamento.
+            </p>
+          </div>
+        </section>
+
         <section className="py-20 sm:py-28" aria-labelledby="depoimentos-title">
           <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
             <div className="mx-auto max-w-3xl text-center">
