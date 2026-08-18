@@ -63,23 +63,26 @@ export async function GET() {
 
       if (status === 200 && body?.access_token) {
         results['pix_auth'] = '✅ Token obtido!';
-        
-        // Try creating a PIX charge
-        const { status: chargeStatus, body: chargeBody } = await httpsRequest('https://pix.api.efipay.com.br/v2/cob', {
-          method: 'POST',
-          headers: { authorization: `Bearer ${body.access_token}`, 'content-type': 'application/json' },
-          agent,
-        }, JSON.stringify({
-          calendario: { expiracao: 3600 },
-          valor: { original: '0.01' },
-          chave: process.env.PIX_KEY,
-          solicitacaoPagador: 'Jornada Leve - Diagnóstico'
-        }));
 
-        if (chargeStatus === 201) {
-          results['pix_charge'] = `✅ Criada! txid: ${chargeBody?.txid || '?'}`;
+        if (process.env.PIX_DIAGNOSTIC_CREATE_CHARGE !== 'true') {
+          results['pix_charge'] = '⏭️ ignorada por segurança';
         } else {
-          results['pix_charge'] = `❌ HTTP ${chargeStatus}: ${typeof chargeBody === 'string' ? chargeBody.substring(0, 100) : JSON.stringify(chargeBody).substring(0, 100)}`;
+          const { status: chargeStatus, body: chargeBody } = await httpsRequest('https://pix.api.efipay.com.br/v2/cob', {
+            method: 'POST',
+            headers: { authorization: `Bearer ${body.access_token}`, 'content-type': 'application/json' },
+            agent,
+          }, JSON.stringify({
+            calendario: { expiracao: 3600 },
+            valor: { original: '0.01' },
+            chave: process.env.PIX_KEY,
+            solicitacaoPagador: 'Jornada Leve - Diagnóstico'
+          }));
+
+          if (chargeStatus === 201) {
+            results['pix_charge'] = `✅ Criada! txid: ${chargeBody?.txid || '?'}`;
+          } else {
+            results['pix_charge'] = `❌ HTTP ${chargeStatus}: ${typeof chargeBody === 'string' ? chargeBody.substring(0, 100) : JSON.stringify(chargeBody).substring(0, 100)}`;
+          }
         }
       } else {
         results['pix_auth'] = `❌ HTTP ${status}: ${typeof body === 'string' ? body.substring(0, 100) : JSON.stringify(body).substring(0, 100)}`;
