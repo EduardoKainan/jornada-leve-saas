@@ -20,6 +20,7 @@ Configure em **Project Settings → Environment Variables → Production**:
 
 ```env
 NEXT_PUBLIC_APP_URL=https://seu-dominio.com.br
+NEXT_PUBLIC_META_PIXEL_ID=4813458388881392
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
