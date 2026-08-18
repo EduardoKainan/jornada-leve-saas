@@ -1,4 +1,8 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd ../.. && npm install",
+  "buildCommand": "cd ../.. && npm run build --workspace @jornada-leve/web",
+  "devCommand": "cd ../.. && npm run dev --workspace @jornada-leve/web",
   "crons": [
     {
       "path": "/api/cron/dunning",
@@ -7,6 +11,10 @@
     {
       "path": "/api/cron/reports",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/privacy-deletions",
+      "schedule": "0 4 * * *"
     }
   ]
 }

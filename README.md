@@ -50,15 +50,18 @@ Sem arquivo de exemplo, crie `apps/web/.env.local` a partir da lista abaixo. Nun
 | `NEXT_PUBLIC_SUPABASE_URL` | sim | URL do projeto Supabase, sem `/rest/v1` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | sim | Cliente Supabase com RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | sim | Jobs administrativos; somente servidor |
+| `DATABASE_URL` | migrações | Conexão PostgreSQL usada pelo Drizzle |
 | `CHECKIN_NOTES_ENCRYPTION_KEY` | produção | Chave com 32+ caracteres para notas |
 | `RESEND_API_KEY` | produção | Envio transacional |
 | `RESEND_FROM_EMAIL` | produção | Remetente verificado, ex. `Jornada Leve <noreply@dominio>` |
 | `RESEND_WEBHOOK_SECRET` | produção | Assinatura Svix do webhook Resend |
 | `PRIVACY_TOKEN_SECRET` | produção | Tokens LGPD; aleatório com 32+ caracteres |
 | `CRON_SECRET` | produção | Protege jobs de dunning, relatórios e exclusões |
-| `EFI_CLIENT_ID` | cobrança | Credencial Efí |
-| `EFI_CLIENT_SECRET` | cobrança | Credencial Efí |
+| `EFI_PIX_CLIENT_ID` | cobrança | Credencial Efí PIX |
+| `EFI_PIX_CLIENT_SECRET` | cobrança | Credencial Efí PIX |
+| `PIX_KEY` | cobrança | Chave PIX |
 | `EFI_WEBHOOK_TOKEN` | cobrança | Validação do webhook Efí |
+| `EFI_PIX_CERT_BASE64` | cobrança | Certificado Efí em base64 para Vercel |
 | `EFI_SANDBOX` | sim | `true` local/homologação; `false` produção |
 | `REPORT_RETENTION_DAYS` | não | Retenção dos PDFs; padrão 30 dias |
 
@@ -88,6 +91,5 @@ Configure o job de exclusões ao menos diariamente. O processamento também é d
 
 ## Produto e operação
 
-- [Resumo do PRD](docs/PRD.md)
-- [Checklist de go-live](docs/CHECKLIST-GOLIVE.md)
+- [Deploy na Vercel](docs/VERCEL_DEPLOY.md)
 - Repositório: <https://github.com/EduardoKainan/jornada-leve-saas>
