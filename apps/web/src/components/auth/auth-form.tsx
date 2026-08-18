@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/client';
 import { sanitizeNextPath } from '@/lib/onboarding';
+import { getPublicAuthRedirectUrl } from '@/lib/app-url';
 
 type Mode = 'login' | 'signup' | 'recovery';
 
@@ -26,8 +27,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
     const supabase = createClient();
     try {
       if (mode === 'recovery') {
-        const callback = `${window.location.origin}/auth/callback?next=/redefinir-senha`;
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: callback });
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: getPublicAuthRedirectUrl(),
+        });
         if (error) throw error;
         toast.success('Enviamos as instruções para o seu e-mail.');
         return;
