@@ -3,24 +3,35 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase/config';
 
 export async function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const protectedRoute = path.startsWith('/app') || path.startsWith('/onboarding') || path.startsWith('/admin');
+  const authRoute = path === '/entrar' || path === '/cadastro';
+
+  if (!protectedRoute && !authRoute) return NextResponse.next({ request });
+
   let response = NextResponse.next({ request });
-  const supabase = createServerClient(
-    getSupabaseUrl(),
-    getSupabaseAnonKey(),
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+  let supabase;
+  try {
+    supabase = createServerClient(
+      getSupabaseUrl(),
+      getSupabaseAnonKey(),
+      {
+        cookies: {
+          getAll: () => request.cookies.getAll(),
+          setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          },
         },
       },
-    },
-  );
+    );
+  } catch {
+    if (protectedRoute) return NextResponse.redirect(new URL('/entrar', request.url));
+    return NextResponse.next({ request });
+  }
 
   const { data: { user } } = await supabase.auth.getUser();
-  const path = request.nextUrl.pathname;
 
   function redirect(pathname: string, next?: string) {
     const url = request.nextUrl.clone();
@@ -34,7 +45,6 @@ export async function proxy(request: NextRequest) {
     return redirectResponse;
   }
 
-  const protectedRoute = path.startsWith('/app') || path.startsWith('/onboarding') || path.startsWith('/admin');
   if (protectedRoute && !user) {
     return redirect('/entrar', `${path}${request.nextUrl.search}`);
   }
