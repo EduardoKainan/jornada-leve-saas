@@ -25,16 +25,16 @@ test('does not generate password recovery links to localhost', () => {
   assert.equal(getAppUrl(), 'http://localhost:3000');
   assert.equal(
     getPublicAuthRedirectUrl(),
-    'https://jornadaleve.com.br/auth/callback?next=/redefinir-senha',
+    'https://jornadaleve.vercel.app/auth/callback?next=/redefinir-senha',
   );
 });
 
 test('falls back to production URL when configured app URL is invalid', () => {
   process.env.NEXT_PUBLIC_APP_URL = 'not-a-url';
 
-  assert.equal(getAppUrl(), 'https://jornadaleve.com.br');
+  assert.equal(getAppUrl(), 'https://jornadaleve.vercel.app');
   assert.equal(
     getPublicAuthRedirectUrl(),
-    'https://jornadaleve.com.br/auth/callback?next=/redefinir-senha',
+    'https://jornadaleve.vercel.app/auth/callback?next=/redefinir-senha',
   );
 });

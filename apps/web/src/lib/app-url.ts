@@ -1,4 +1,4 @@
-const DEFAULT_APP_URL = 'https://jornadaleve.com.br';
+const DEFAULT_APP_URL = 'https://jornadaleve.vercel.app';
 
 function parseOrigin(value?: string | null) {
   if (!value?.trim()) return null;
