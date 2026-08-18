@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { getAppUrlWithoutTrailingSlash } from '@/lib/app-url';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://jornadaleve.com.br').replace(/\/$/, '');
+  const baseUrl = getAppUrlWithoutTrailingSlash();
   return {
     rules: { userAgent: '*', allow: '/', disallow: ['/app/', '/api/', '/admin/', '/onboarding/'] },
     sitemap: `${baseUrl}/sitemap.xml`,

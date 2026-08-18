@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { getAppUrlWithoutTrailingSlash } from '@/lib/app-url';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://jornadaleve.com.br').replace(/\/$/, '');
+  const baseUrl = getAppUrlWithoutTrailingSlash();
   const lastModified = new Date();
   return [
     { url: baseUrl, lastModified, changeFrequency: 'weekly', priority: 1 },

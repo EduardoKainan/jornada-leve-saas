@@ -2,10 +2,11 @@ import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import '@/styles/globals.css';
+import { getAppUrl } from '@/lib/app-url';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://jornadaleve.com.br'),
+  metadataBase: new URL(getAppUrl()),
   title: {
     default: 'Jornada Leve',
     template: '%s | Jornada Leve',
