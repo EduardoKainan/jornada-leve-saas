@@ -47,3 +47,5 @@ packages/db/drizzle/meta/
 *.swo
 *~
 tsconfig.tsbuildinfo
+.vercel
+.env*
