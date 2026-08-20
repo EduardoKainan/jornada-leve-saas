@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const { data: previousTrial } = await admin.from('subscriptions').select('id')
       .eq('provider_subscription_id', `trial:${user.id}`).maybeSingle();
     if (previousTrial) return NextResponse.json({ error: 'O período gratuito já foi utilizado nesta conta.' }, { status: 409 });
-    const trialEndsAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    const trialEndsAt = new Date(Date.now() + 2 * 86_400_000).toISOString();
     const { data, error } = await admin.from('subscriptions').insert({
       user_id: user.id,
       provider: 'efi',

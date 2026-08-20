@@ -26,7 +26,7 @@ import {
 export const metadata: Metadata = {
   title: 'Acompanhe seu tratamento com dados reais',
   description:
-    'Registre peso, medidas e sintomas, acompanhe sua evolução e gere relatórios para suas consultas. Teste o Jornada Leve grátis por 7 dias.',
+    'Registre peso, medidas e sintomas, acompanhe sua evolução e gere relatórios para suas consultas. Teste o Jornada Leve grátis por 48 horas.',
   alternates: { canonical: '/' },
   keywords: [
     'acompanhamento Mounjaro',
@@ -145,7 +145,7 @@ const faqs = [
   {
     question: 'Preciso de cartão de crédito?',
     answer:
-      'Não. Você pode começar o período grátis de 7 dias sem cadastrar cartão de crédito.',
+      'Não. Você pode começar o período grátis de 48 horas sem cadastrar cartão de crédito.',
   },
 ];
 
@@ -238,7 +238,7 @@ export default function LandingPage() {
               </p>
               <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                 <Link href="/cadastro" className={primaryButton}>
-                  Começar grátis por 7 dias
+                  Começar grátis por 48 horas
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                 </Link>
                 <p className="flex items-center gap-2 text-sm text-emerald-50/75">
@@ -575,11 +575,11 @@ export default function LandingPage() {
             </div>
             <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
               <article className="flex flex-col rounded-[2rem] border border-slate-200 bg-white p-7 sm:p-8">
-                <h3 className="text-xl font-bold">Grátis por 7 dias</h3>
+                <h3 className="text-xl font-bold">Grátis por 48 horas</h3>
                 <p className="mt-2 text-sm text-slate-500">Conheça o Jornada Leve sem compromisso.</p>
-                <div className="mt-6"><span className="text-4xl font-bold">R$ 0</span><span className="text-slate-500"> / 7 dias</span></div>
+                <div className="mt-6"><span className="text-4xl font-bold">R$ 0</span><span className="text-slate-500"> / 48 horas</span></div>
                 <ul className="mt-7 flex-1 space-y-4 text-sm text-slate-700">
-                  {['Sem cartão de crédito', 'Acesso completo por 7 dias', 'Cancele quando quiser'].map((item) => <li key={item} className="flex gap-2"><Check className="size-5 shrink-0 text-emerald-600" aria-hidden="true" />{item}</li>)}
+                  {['Sem cartão de crédito', 'Acesso completo por 48 horas', 'Cancele quando quiser'].map((item) => <li key={item} className="flex gap-2"><Check className="size-5 shrink-0 text-emerald-600" aria-hidden="true" />{item}</li>)}
                 </ul>
                 <Link href="/cadastro" className="inline-flex min-h-12 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-bold text-white shadow-[0_6px_20px_-8px_rgba(5,150,105,.6)] transition hover:bg-emerald-700">Testar grátis</Link>
               </article>
@@ -642,7 +642,7 @@ export default function LandingPage() {
               <Link href="/cadastro" className={`${primaryButton} mt-8`}>
                 Começar grátis agora <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
               </Link>
-              <p className="mt-4 text-xs text-emerald-50/60">7 dias grátis · Sem cartão · Cancele quando quiser</p>
+              <p className="mt-4 text-xs text-emerald-50/60">48 horas grátis · Sem cartão · Cancele quando quiser</p>
             </div>
           </div>
         </section>

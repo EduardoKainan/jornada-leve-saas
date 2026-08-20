@@ -23,9 +23,9 @@ export const PLANS: readonly PlanDefinition[] = [
   {
     code: 'trial',
     name: 'Gratuito',
-    description: 'Conheça a Jornada Leve por 7 dias.',
+    description: 'Conheça a Jornada Leve por 48 horas.',
     priceCents: 0,
-    intervalDays: 7,
+    intervalDays: 2,
     recommended: false,
     features: sharedFeatures,
   },
