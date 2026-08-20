@@ -7,12 +7,64 @@ import { PlanCard } from '@/components/billing/plan-card';
 import { SubscriptionStatusBadge } from '@/components/billing/subscription-status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import type { PlanDefinition } from '@/lib/sprint4';
+import type { PlanCode, PlanDefinition } from '@/lib/sprint4';
 import { trialDaysRemaining } from '@/lib/sprint4';
+import { trackInitiateCheckout, trackPurchase } from '@/lib/meta-pixel';
 
-type Subscription = { plan_code: string; status: string; trial_ends_at: string | null };
+type Subscription = {
+  provider_subscription_id?: string | null;
+  plan_code: string;
+  status: string;
+  trial_ends_at: string | null;
+};
 type PageData = { plans: readonly PlanDefinition[]; subscription: Subscription | null };
-type PixPayment = { txid: string; qrCodeImage: string; pixCopiaECola: string };
+type PixPayment = { txid: string; qrCodeImage: string; pixCopiaECola: string; planCode: PlanCode };
+
+type PendingCheckout = { txid: string; planCode: PlanCode };
+
+const pendingCheckoutKey = 'jornada-leve:pending-checkout';
+const trackedPurchaseKey = 'jornada-leve:tracked-purchases';
+
+function planByCode(plans: readonly PlanDefinition[], code: string) {
+  return plans.find((plan) => plan.code === code);
+}
+
+function savePendingCheckout(checkout: PendingCheckout) {
+  window.localStorage.setItem(pendingCheckoutKey, JSON.stringify(checkout));
+}
+
+function getPendingCheckout(): PendingCheckout | null {
+  const raw = window.localStorage.getItem(pendingCheckoutKey);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<PendingCheckout>;
+    return parsed.txid && parsed.planCode ? { txid: parsed.txid, planCode: parsed.planCode } : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingCheckout() {
+  window.localStorage.removeItem(pendingCheckoutKey);
+}
+
+function readTrackedPurchases() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(trackedPurchaseKey) || '[]');
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function hasTrackedPurchase(orderId: string) {
+  return readTrackedPurchases().includes(orderId);
+}
+
+function markPurchaseTracked(orderId: string) {
+  const tracked = readTrackedPurchases();
+  window.localStorage.setItem(trackedPurchaseKey, JSON.stringify(Array.from(new Set([...tracked, orderId])).slice(-20)));
+}
 
 export default function PlansPage() {
   const [data, setData] = useState<PageData | null>(null);
@@ -20,6 +72,22 @@ export default function PlansPage() {
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [pixPayment, setPixPayment] = useState<PixPayment | null>(null);
   const [copied, setCopied] = useState(false);
+
+  function trackConfirmedPurchase(subscription: Subscription | null, plans: readonly PlanDefinition[]) {
+    if (!subscription || subscription.status !== 'active' || !subscription.provider_subscription_id) return;
+    const pending = getPendingCheckout();
+    if (!pending || pending.txid !== subscription.provider_subscription_id || hasTrackedPurchase(pending.txid)) return;
+    const plan = planByCode(plans, pending.planCode);
+    if (!plan || plan.priceCents <= 0) return;
+    trackPurchase({
+      planCode: plan.code,
+      planName: plan.name,
+      valueCents: plan.priceCents,
+      orderId: pending.txid,
+    });
+    markPurchaseTracked(pending.txid);
+    clearPendingCheckout();
+  }
 
   async function load() {
     setError('');
@@ -29,6 +97,7 @@ export default function PlansPage() {
       const plansBody = await plansResponse.json() as { plans: readonly PlanDefinition[] };
       const statusBody = await statusResponse.json() as { subscription: Subscription | null };
       setData({ plans: plansBody.plans, subscription: statusBody.subscription });
+      trackConfirmedPurchase(statusBody.subscription, plansBody.plans);
       return statusBody.subscription;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Ocorreu um erro inesperado.');
@@ -55,7 +124,12 @@ export default function PlansPage() {
       const body = await response.json() as Partial<PixPayment> & { error?: string };
       if (!response.ok) throw new Error(body.error || 'Não foi possível iniciar a assinatura.');
       if (body.txid && body.qrCodeImage && body.pixCopiaECola) {
-        setPixPayment({ txid: body.txid, qrCodeImage: body.qrCodeImage, pixCopiaECola: body.pixCopiaECola });
+        const plan = planByCode(data?.plans ?? [], planCode);
+        if (plan && plan.priceCents > 0) {
+          trackInitiateCheckout({ planCode: plan.code, planName: plan.name, valueCents: plan.priceCents });
+        }
+        savePendingCheckout({ txid: body.txid, planCode });
+        setPixPayment({ txid: body.txid, qrCodeImage: body.qrCodeImage, pixCopiaECola: body.pixCopiaECola, planCode });
       } else {
         await load();
       }

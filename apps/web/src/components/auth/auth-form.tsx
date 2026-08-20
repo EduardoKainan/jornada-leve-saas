@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/client';
 import { sanitizeNextPath } from '@/lib/onboarding';
 import { getPublicAuthRedirectUrl } from '@/lib/app-url';
+import { trackCompleteRegistration } from '@/lib/meta-pixel';
 
 type Mode = 'login' | 'signup' | 'recovery';
 
@@ -52,6 +53,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         }
 
         if (result.session) {
+          if (result.type !== 'login') trackCompleteRegistration('email');
           // Set session via Supabase cookies
           await supabase.auth.setSession({
             access_token: result.session.access_token,
@@ -61,6 +63,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           router.replace('/onboarding');
           router.refresh();
         } else {
+          trackCompleteRegistration('email');
           toast.success('Conta criada! Faça login para continuar.');
           router.replace('/entrar');
           router.refresh();
