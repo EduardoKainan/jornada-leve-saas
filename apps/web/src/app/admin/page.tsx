@@ -215,7 +215,8 @@ export default async function AdminPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/entrar?next=/admin');
 
-  const { data: admin } = await supabase
+  const service = createAdminClient();
+  const { data: admin } = await service
     .from('admin_users')
     .select('role, active')
     .eq('auth_user_id', user.id)
